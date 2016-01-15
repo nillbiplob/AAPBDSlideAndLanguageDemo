@@ -30,5 +30,12 @@
     
     <!-- Content Description -->
     <string name="desc_list_item_icon">Item Icon</string>
+        <string name="language">Bangla</string>
+                <string name="best">best</string>
+                                <string name="liked">liked</string>
+                
+                        <string name="ratetohelpus">Rate to help us</string>
+                                
+    
 
 </resources>

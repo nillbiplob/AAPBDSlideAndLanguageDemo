@@ -2,9 +2,11 @@ package com.aapbd.slidingmenu;
 
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 import com.aapbd.slidingmenu.adapter.NavDrawerListAdapter;
 import com.aapbd.slidingmenu.model.NavDrawerItem;
+import com.aapbd.slidingmenu.model.PersistData;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -14,6 +16,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
@@ -50,9 +53,19 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		
 		setContentView(R.layout.activity_main);
 		con=this;
 
+		
+		/*
+		 * set user selected Locale which will change text
+		 */
+		setLocale();
+		
+		
+		
 		mTitle = mDrawerTitle = getTitle();
 
 		// load slide menu items
@@ -96,8 +109,44 @@ public class MainActivity extends Activity {
 			// on first time display view for first nav item
 			displayView(0);
 		}
+		
+	
 	}
 	
+	
+	 private void setLocale() {
+
+	        String languageCode=PersistData.getStringData(con, "LNG");
+	        
+	        Log.e("from storage", languageCode+" ");
+
+	        //languageCode="bn";
+	        if(languageCode.equalsIgnoreCase(""))
+	        {
+	        	
+	            /*
+	            Choose device language for first time as User didn't select anything yet.
+	             */
+	            languageCode=Locale.getDefault().getLanguage();
+	         
+	            /*
+	             * hard code english for first time.
+	             */
+	            PersistData.setStringData(con,"LNG", "en");
+
+	        }
+	        
+	        
+	        Log.e("Current language code is", languageCode);
+	        
+	        Locale locale = new Locale(languageCode);
+	        Locale.setDefault(locale);
+	        Configuration config = new Configuration();
+	        config.locale = locale;
+	        con.getApplicationContext().getResources().updateConfiguration(config, null);
+
+
+	    }
 	/*
 	 * make slide list
 	 */
@@ -151,6 +200,13 @@ public class MainActivity extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.actionbarmenu, menu);
+        
+        /*
+         * change menu item title based on user selection.
+         */
+        
+      
+        
  
         // Associate searchable configuration with the SearchView
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
@@ -226,15 +282,84 @@ Toast.makeText(con, "Query is "+query, 1000).show();
 			return true;
 			
 			
-		case R.id.action_new:
-			Toast.makeText(con, "NEW button is clicked", 1000).show(); 
+		case R.id.action_language:
+		{
+			Toast.makeText(con, "Language button is clicked", 1000).show(); 
+			
+			
+			String lCode="en";
+			
+			if(PersistData.getStringData(con, "LNG").equalsIgnoreCase("en"))
+			{
+				
+				/*
+				 *english is there already, need bangla
+				 */
+				lCode="bn";
+				
+				
+			
+				
+				
+				
+			}else if(PersistData.getStringData(con, "LNG").equalsIgnoreCase("bn"))
+			
+			{
+				lCode="en";
+				
+				
+			}
+			
+			
+			changeLocateAndRestart(lCode);
 
 			return true;
+		}
 			
 		default:
 			return super.onOptionsItemSelected(item);
 		}
 	}
+
+	private void changeLocateAndRestart(String lCode) {
+		// TODO Auto-generated method stub
+		
+		
+		    Locale locale = new Locale(lCode);
+	        Locale.setDefault(locale);
+	        Configuration config = new Configuration();
+	        config.locale = locale;
+	        con.getApplicationContext().getResources().updateConfiguration(config, null);
+
+	        
+	        PersistData.setStringData(con, "LNG", lCode);
+	   
+	        Log.e("Storing language code ", lCode);
+	        
+	      
+	        
+	        /*
+	         * most important, can create bug. Rememer the sequence, otherwise it won't work.
+	         */
+	     
+	        
+	        /*
+	         * Call finish method first
+	         * 
+	         */
+	        MainActivity.this.finish();
+	        
+	        /*
+	         * then call same activity to restart.
+	         */
+	        
+	        Intent i=new Intent(con, MainActivity.class);
+		     
+		    startActivity(i);
+
+		
+	}
+
 
 	/* *
 	 * Called when invalidateOptionsMenu() is triggered
@@ -323,7 +448,15 @@ Toast.makeText(con, "Query is "+query, 1000).show();
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 		// Pass any configuration change to the drawer toggls
+
+		
+		
 		mDrawerToggle.onConfigurationChanged(newConfig);
 	}
 
+	/*
+	 * Store machanism
+	 */
+	
+	
 }
